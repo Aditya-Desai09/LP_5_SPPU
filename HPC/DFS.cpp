@@ -14,6 +14,17 @@ void parallelDFS(int start) {
     stack<int> s;
     s.push(start);
 
+    // Get number of threads once, before traversal starts
+    int num_threads;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            num_threads = omp_get_num_threads();
+        }
+    }
+    cout << "\nNumber of threads: " << num_threads << endl;
+
     while (!s.empty()) {
         int node = s.top();
         s.pop();
@@ -24,22 +35,13 @@ void parallelDFS(int start) {
             cout << node << " ";
 
             // Start a parallel region for neighbors
-            #pragma omp parallel
-            {
-                int num_threads = omp_get_num_threads();
-                #pragma omp single
-                {
-                    cout << "\nNumber of threads: " << num_threads << endl;
-                }
-
-                #pragma omp for
-                for (int i = 0; i < graph[node].size(); i++) {
-                    int neighbor = graph[node][i];
-                    if (!visited[neighbor]) {
-                        #pragma omp critical
-                        {
-                            s.push(neighbor);
-                        }
+            #pragma omp parallel for
+            for (int i = 0; i < graph[node].size(); i++) {
+                int neighbor = graph[node][i];
+                if (!visited[neighbor]) {
+                    #pragma omp critical
+                    {
+                        s.push(neighbor);
                     }
                 }
             }
