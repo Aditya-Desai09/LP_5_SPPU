@@ -23,15 +23,23 @@ void parallelDFS(int start) {
             visited[node] = true;
             cout << node << " ";
 
-            // Traverse all neighbors in parallel
-            #pragma omp parallel for
-            for (int i = 0; i < graph[node].size(); i++) {
-                int neighbor = graph[node][i];
-                // Critical section to avoid race conditions
-                if (!visited[neighbor]) {
-                    #pragma omp critical
-                    {
-                        s.push(neighbor);
+            // Start a parallel region for neighbors
+            #pragma omp parallel
+            {
+                int num_threads = omp_get_num_threads();
+                #pragma omp single
+                {
+                    cout << "\nNumber of threads: " << num_threads << endl;
+                }
+
+                #pragma omp for
+                for (int i = 0; i < graph[node].size(); i++) {
+                    int neighbor = graph[node][i];
+                    if (!visited[neighbor]) {
+                        #pragma omp critical
+                        {
+                            s.push(neighbor);
+                        }
                     }
                 }
             }

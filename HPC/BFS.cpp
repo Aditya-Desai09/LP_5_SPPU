@@ -25,29 +25,38 @@ void parallelBFS(int start) {
         }
 
         // Parallel processing of the current BFS level
-        #pragma omp parallel for
-        for (int i = 0; i < levelSize; i++) {
-            int node;
-
-            // Extract node from queue inside critical to avoid conflicts
-            #pragma omp critical
+        #pragma omp parallel
+        {
+            int num_threads = omp_get_num_threads();
+            #pragma omp single
             {
-                if (!q.empty()) {
-                    node = q.front();
-                    q.pop();
-                    cout << node << " ";
-                }
+                cout << "\nNumber of threads: " << num_threads << endl;
             }
 
-            // Visit neighbors
-            for (int j = 0; j < graph[node].size(); j++) {
-    			int neighbor = graph[node][j];
-                if (!visited[neighbor]) {
-                    #pragma omp critical
-                    {
-                        if (!visited[neighbor]) {
-                            visited[neighbor] = true;
-                            q.push(neighbor);
+            #pragma omp for
+            for (int i = 0; i < levelSize; i++) {
+                int node;
+
+                // Extract node from queue inside critical to avoid conflicts
+                #pragma omp critical
+                {
+                    if (!q.empty()) {
+                        node = q.front();
+                        q.pop();
+                        cout << node << " ";
+                    }
+                }
+
+                // Visit neighbors
+                for (int j = 0; j < graph[node].size(); j++) {
+                    int neighbor = graph[node][j];
+                    if (!visited[neighbor]) {
+                        #pragma omp critical
+                        {
+                            if (!visited[neighbor]) {
+                                visited[neighbor] = true;
+                                q.push(neighbor);
+                            }
                         }
                     }
                 }

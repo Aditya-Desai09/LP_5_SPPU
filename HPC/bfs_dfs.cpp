@@ -16,7 +16,16 @@ void parallelDFS(int start) {
     visited[start] = true;
     s.push(start);
 
-    cout << "\nParallel DFS Traversal: ";
+    int num_threads;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            num_threads = omp_get_num_threads();
+        }
+    }
+    cout << "\nNumber of threads in DFS: " << num_threads << endl;
+    cout << "Parallel DFS Traversal: ";
 
     while (!s.empty()) {
         int node = s.top();
@@ -46,7 +55,16 @@ void parallelBFS(int start) {
     visited[start] = true;
     q.push(start);
 
-    cout << "\nParallel BFS Traversal: ";
+    int num_threads;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            num_threads = omp_get_num_threads();
+        }
+    }
+    cout << "\n\nNumber of threads in BFS: " << num_threads << endl;
+    cout << "Parallel BFS Traversal: ";
 
     while (!q.empty()) {
         int node = q.front();
@@ -98,7 +116,7 @@ int main() {
     // Perform Parallel DFS
     parallelDFS(start_node);
 
-    // Reinitialize visited array to false for BFS (since BFS and DFS share the same visited array)
+    // Reinitialize visited array to false for BFS
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         visited[i] = false;
